@@ -1,13 +1,13 @@
 FROM google/cloud-sdk:alpine
 
-RUN apk add --update --no-cache make bash gcc musl-dev
+RUN apk add --no-cache ca-certificates
+RUN apk add --update --no-cache make gcc musl-dev openssh-client git unzip
 
 ## gcloud
-RUN gcloud components install app-engine-go
-RUN gcloud components update
+RUN gcloud components update --quiet
+RUN gcloud --quiet components install app-engine-go
 
 ## golang
-RUN apk add --no-cache ca-certificates
 ENV GOLANG_VERSION 1.8.3
 # https://golang.org/issue/14851 (Go 1.8 & 1.7)
 # https://golang.org/issue/17847 (Go 1.7)
@@ -58,11 +58,8 @@ ENV GAE_VERSION=1.9.59
 ENV GAE_SDK=https://storage.googleapis.com/appengine-sdks/featured/go_appengine_sdk_linux_amd64-${GAE_VERSION}.zip \
     PATH=/google_appengine:${PATH} \
     GOROOT=/usr/local/go
-RUN apk add --update --no-cache openssh-client git python && \
-    apk add --update --no-cache --virtual=build-time-only curl unzip && \
-	curl -fo /tmp/gae.zip ${GAE_SDK} &&  \
+RUN curl -fo /tmp/gae.zip ${GAE_SDK} &&  \
 	unzip -q /tmp/gae.zip -d /tmp/ &&  \
-	mv /tmp/go_appengine /google_appengine && \
-    apk del build-time-only
+	mv /tmp/go_appengine /google_appengine
 
 RUN rm -rf /tmp/* /var/cache/apk/*
